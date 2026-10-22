@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "start": "node --env-file=.env src/index.js",
+    "dev": "node --env-file=.env --watch src/index.js",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "load": "node scripts/load.js"

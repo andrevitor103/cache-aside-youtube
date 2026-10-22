@@ -21,7 +21,7 @@ A API lista as permissões de um usuário com o padrão **cache-aside** (Redis +
 A resposta inclui `source: "db"` ou `source: "cache"` para ficar óbvio na demo. No terminal aparecem `cache:hit` / `cache:miss` e o tempo da query no miss (`console.time`).
 
 Chave Redis: `permission:user:{userId}`  
-TTL default: `300` (override com `CACHE_TTL_SECONDS`)
+TTL default: `300` (override no `.env` com `CACHE_TTL_SECONDS`; veja `.env.example`)
 
 ## Pré-requisitos
 
