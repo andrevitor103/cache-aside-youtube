@@ -10,3 +10,9 @@ services:
       - "5432:5432"
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  redis:
+    image: redis:7-alpine
+    container_name: cache-aside-redis
+    ports:
+      - "6379:6379"

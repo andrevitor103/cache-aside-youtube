@@ -17,6 +17,7 @@
   "description": "Exemplo simples de API de permissões para vídeo sobre cache-aside",
   "dependencies": {
     "express": "^5.3.0",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "redis": "^6.3.0"
   }
 }

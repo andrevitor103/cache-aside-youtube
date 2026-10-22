@@ -2,23 +2,25 @@
 
 Exemplo usado no vídeo sobre **cache-aside** no YouTube.
 
-A API lista as permissões de um usuário. O ponto da demo é comparar a mesma consulta indo sempre ao banco com a versão que passa pelo cache.
+A API lista as permissões de um usuário com o padrão **cache-aside** (Redis + PostgreSQL).
 
-## Spec atual
+## Specs
 
-Esta entrega segue a spec SDD em [`specs/001-permissions-without-cache.md`](specs/001-permissions-without-cache.md): domínio de permissões **sem cache**.
+| Spec | Conteúdo |
+| --- | --- |
+| [`specs/001-permissions-without-cache.md`](specs/001-permissions-without-cache.md) | Domínio de permissões (baseline) |
+| [`specs/002-cache-aside-permissions.md`](specs/002-cache-aside-permissions.md) | Cache-aside com TTL de 5 minutos |
 
-## Objetivo
+## Como funciona
 
-Mostrar o padrão **cache-aside** em uma leitura que se repete:
+1. A aplicação procura o resultado no Redis.
+2. Se não encontrar (**cache miss**), busca no PostgreSQL, devolve a resposta e grava no cache com TTL de **300s**.
+3. Na próxima requisição igual (**cache hit**), responde pelo Redis e não consulta o banco.
 
-1. A aplicação procura o resultado no cache.
-2. Se não encontrar (**cache miss**), busca no PostgreSQL, devolve a resposta e grava o resultado no cache.
-3. Na próxima requisição igual (**cache hit**), responde pelo cache e não consulta o banco.
+A resposta inclui `source: "db"` ou `source: "cache"` para ficar óbvio na demo. No terminal aparecem `cache:hit` / `cache:miss` e o tempo da query no miss (`console.time`).
 
-Nesta branch/base: **sem cache**. Toda requisição em `GET /permission` consulta o PostgreSQL.
-
-O tempo de cada consulta aparece no terminal da API (`console.time`), para ficar visível a diferença quando o cache for adicionado.
+Chave Redis: `permission:user:{userId}`  
+TTL default: `300` (override com `CACHE_TTL_SECONDS`)
 
 ## Pré-requisitos
 
@@ -33,20 +35,11 @@ npm run db:up
 npm run dev
 ```
 
-- `npm run db:up` sobe o PostgreSQL (`postgres:16`) e carrega o seed em `db/init.sql`.
-- `npm run dev` sobe a API em [http://localhost:3000](http://localhost:3000) e reinicia ao salvar os arquivos.
-- `npm start` sobe a API sem o modo watch.
+- `npm run db:up` sobe PostgreSQL e Redis.
+- `npm run dev` sobe a API em [http://localhost:3000](http://localhost:3000).
+- `npm start` sobe a API sem watch.
 
-Se você já tinha o container antigo (domínio de pedidos), recrie o volume:
-
-```bash
-npm run db:down
-docker volume ls | grep cache-aside
-docker compose down -v
-npm run db:up
-```
-
-Para parar o banco:
+Para parar:
 
 ```bash
 npm run db:down
@@ -54,8 +47,22 @@ npm run db:down
 
 ## Testar
 
+Primeira chamada (miss → banco):
+
 ```bash
 curl "http://localhost:3000/permission?user=1"
+```
+
+Segunda chamada (hit → cache):
+
+```bash
+curl "http://localhost:3000/permission?user=1"
+```
+
+Conferir TTL no Redis:
+
+```bash
+docker exec cache-aside-redis redis-cli TTL permission:user:1
 ```
 
 `user` é obrigatório e precisa ser um inteiro positivo.
@@ -68,4 +75,5 @@ Permissões de exemplo:
 | 2 | Bruno | `pedidos:ler` |
 | 3 | Carla | _(nenhuma)_ |
 
-Credenciais locais do banco (já usadas pela API se as variáveis de ambiente não forem definidas): usuário `permissoes`, senha `permissoes`, database `permissoes`, porta `5432`.
+Credenciais locais do Postgres: usuário `permissoes`, senha `permissoes`, database `permissoes`, porta `5432`.  
+Redis: `redis://localhost:6379`.
