@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: cache-aside
+    orgId: 1
+    folder: Cache Aside
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards

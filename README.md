@@ -10,6 +10,7 @@ A API lista as permissões de um usuário com o padrão **cache-aside** (Redis +
 | --- | --- |
 | [`specs/001-permissions-without-cache.md`](specs/001-permissions-without-cache.md) | Domínio de permissões (baseline) |
 | [`specs/002-cache-aside-permissions.md`](specs/002-cache-aside-permissions.md) | Cache-aside com TTL de 5 minutos |
+| [`specs/003-observability-prometheus-grafana.md`](specs/003-observability-prometheus-grafana.md) | Observabilidade (Prometheus + Grafana) |
 
 ## Como funciona
 
@@ -35,9 +36,20 @@ npm run db:up
 npm run dev
 ```
 
-- `npm run db:up` sobe PostgreSQL e Redis.
+- `npm run db:up` sobe PostgreSQL, Redis, Prometheus e Grafana.
 - `npm run dev` sobe a API em [http://localhost:3000](http://localhost:3000).
 - `npm start` sobe a API sem watch.
+
+| Serviço | URL |
+| --- | --- |
+| API | http://localhost:3000 |
+| Métricas (`/metrics`) | http://localhost:3000/metrics |
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3001 (user/senha: `admin` / `admin`) |
+
+Dashboard pronto: **Cache Aside — Permissions** (pasta *Cache Aside*).
+
+> O Prometheus raspá a API no host via `host.docker.internal:3000`. A API precisa estar rodando (`npm start` / `npm run dev`) para as métricas aparecerem.
 
 Para parar:
 
@@ -74,6 +86,20 @@ Permissões de exemplo:
 | 1 | Ana | `pedidos:ler`, `pedidos:escrever`, `relatorios:ler` |
 | 2 | Bruno | `pedidos:ler` |
 | 3 | Carla | _(nenhuma)_ |
+
+### Gerar tráfego para o Grafana
+
+```bash
+# miss
+curl -s "http://localhost:3000/permission?user=1" >/dev/null
+# hits
+for i in $(seq 1 20); do curl -s "http://localhost:3000/permission?user=1" >/dev/null; done
+```
+
+Métricas principais:
+
+- `cache_aside_permission_requests_total{source="cache|db"}`
+- `cache_aside_permission_duration_seconds`
 
 Credenciais locais do Postgres: usuário `permissoes`, senha `permissoes`, database `permissoes`, porta `5432`.  
 Redis: `redis://localhost:6379`.
