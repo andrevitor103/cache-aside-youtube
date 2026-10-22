@@ -1,8 +1,12 @@
-# Cache-aside — API de pedidos
+# Cache-aside — API de permissões
 
 Exemplo usado no vídeo sobre **cache-aside** no YouTube.
 
-A API lista pedidos de um cliente filtrados por status. O ponto da demo é comparar a mesma consulta indo sempre ao banco com a versão que passa pelo cache.
+A API lista as permissões de um usuário. O ponto da demo é comparar a mesma consulta indo sempre ao banco com a versão que passa pelo cache.
+
+## Spec atual
+
+Esta entrega segue a spec SDD em [`specs/001-permissions-without-cache.md`](specs/001-permissions-without-cache.md): domínio de permissões **sem cache**.
 
 ## Objetivo
 
@@ -12,14 +16,9 @@ Mostrar o padrão **cache-aside** em uma leitura que se repete:
 2. Se não encontrar (**cache miss**), busca no PostgreSQL, devolve a resposta e grava o resultado no cache.
 3. Na próxima requisição igual (**cache hit**), responde pelo cache e não consulta o banco.
 
-O repositório está dividido em duas branches para o vídeo acompanhar o antes e o depois:
+Nesta branch/base: **sem cache**. Toda requisição em `GET /permission` consulta o PostgreSQL.
 
-| Branch | O que tem |
-| --- | --- |
-| `main` | Sem cache. Toda requisição em `GET /pedidos` consulta o PostgreSQL. |
-| `com-cache` | Com cache-aside. A mesma rota tenta o cache antes de ir ao banco. |
-
-O tempo de cada consulta aparece no terminal da API (`console.time`), para ficar visível a diferença entre as duas versões.
+O tempo de cada consulta aparece no terminal da API (`console.time`), para ficar visível a diferença quando o cache for adicionado.
 
 ## Pré-requisitos
 
@@ -28,17 +27,24 @@ O tempo de cada consulta aparece no terminal da API (`console.time`), para ficar
 
 ## Como subir
 
-Na branch que você quer demonstrar (`main` ou `com-cache`):
-
 ```bash
 npm install
 npm run db:up
 npm run dev
 ```
 
-- `npm run db:up` sobe o PostgreSQL (`postgres:16`) e carrega os pedidos de exemplo em `db/init.sql`.
+- `npm run db:up` sobe o PostgreSQL (`postgres:16`) e carrega o seed em `db/init.sql`.
 - `npm run dev` sobe a API em [http://localhost:3000](http://localhost:3000) e reinicia ao salvar os arquivos.
 - `npm start` sobe a API sem o modo watch.
+
+Se você já tinha o container antigo (domínio de pedidos), recrie o volume:
+
+```bash
+npm run db:down
+docker volume ls | grep cache-aside
+docker compose down -v
+npm run db:up
+```
 
 Para parar o banco:
 
@@ -49,17 +55,17 @@ npm run db:down
 ## Testar
 
 ```bash
-curl "http://localhost:3000/pedidos?clienteId=1&status=pendente"
+curl "http://localhost:3000/permission?user=1"
 ```
 
-`clienteId` é obrigatório e precisa ser um inteiro positivo. `status` é opcional e, se omitido, vale `pendente`.
+`user` é obrigatório e precisa ser um inteiro positivo.
 
-Pedidos de exemplo já inseridos:
+Permissões de exemplo:
 
-| clienteId | status |
-| --- | --- |
-| 1 | `pendente`, `pago` |
-| 2 | `pendente`, `cancelado` |
-| 3 | `pendente` |
+| user | nome | permissões |
+| --- | --- | --- |
+| 1 | Ana | `pedidos:ler`, `pedidos:escrever`, `relatorios:ler` |
+| 2 | Bruno | `pedidos:ler` |
+| 3 | Carla | _(nenhuma)_ |
 
-Credenciais locais do banco (já usadas pela API se as variáveis de ambiente não forem definidas): usuário `pedidos`, senha `pedidos`, database `pedidos`, porta `5432`.
+Credenciais locais do banco (já usadas pela API se as variáveis de ambiente não forem definidas): usuário `permissoes`, senha `permissoes`, database `permissoes`, porta `5432`.

@@ -1,39 +1,39 @@
 const express = require("express");
-const { buscarPedidosPorClienteEStatus } = require("./db");
+const { buscarPermissoesPorUsuario } = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get("/pedidos", async (req, res) => {
-  const clienteId = Number(req.query.clienteId);
-  const status = req.query.status || "pendente";
+app.get("/permission", async (req, res) => {
+  const user = Number(req.query.user);
 
-  if (!Number.isInteger(clienteId) || clienteId <= 0) {
+  if (!Number.isInteger(user) || user <= 0) {
     return res.status(400).json({
-      erro: "Parâmetro clienteId é obrigatório e deve ser um inteiro positivo.",
+      erro: "Parâmetro user é obrigatório e deve ser um inteiro positivo.",
     });
   }
 
   try {
-    console.time(`db:cliente=${clienteId}:status=${status}`);
-    const pedidos = await buscarPedidosPorClienteEStatus(clienteId, status);
-    console.timeEnd(`db:cliente=${clienteId}:status=${status}`);
+    console.time(`db:user=${user}`);
+    const permissions = await buscarPermissoesPorUsuario(user);
+    console.timeEnd(`db:user=${user}`);
 
     return res.json({
-      clienteId,
-      status,
-      total: pedidos.length,
-      pedidos,
+      user,
+      total: permissions.length,
+      permissions,
     });
   } catch (error) {
-    console.error("Erro ao buscar pedidos:", error.message);
-    return res.status(500).json({ erro: "Erro ao buscar pedidos no banco." });
+    console.error("Erro ao buscar permissões:", error.message);
+    return res.status(500).json({
+      erro: "Erro ao buscar permissões no banco.",
+    });
   }
 });
 
 app.listen(PORT, () => {
   console.log(`API rodando em http://localhost:${PORT}`);
   console.log(
-    `Exemplo: GET http://localhost:${PORT}/pedidos?clienteId=1&status=pendente`
+    `Exemplo: GET http://localhost:${PORT}/permission?user=1`
   );
 });

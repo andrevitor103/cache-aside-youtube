@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: cache-aside-postgres
     environment:
-      POSTGRES_USER: pedidos
-      POSTGRES_PASSWORD: pedidos
-      POSTGRES_DB: pedidos
+      POSTGRES_USER: permissoes
+      POSTGRES_PASSWORD: permissoes
+      POSTGRES_DB: permissoes
     ports:
       - "5432:5432"
     volumes:

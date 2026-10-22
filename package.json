@@ -14,7 +14,7 @@
   ],
   "author": "",
   "license": "ISC",
-  "description": "Exemplo simples de API de pedidos para vídeo sobre cache-aside",
+  "description": "Exemplo simples de API de permissões para vídeo sobre cache-aside",
   "dependencies": {
     "express": "^5.3.0",
     "pg": "^8.23.1"

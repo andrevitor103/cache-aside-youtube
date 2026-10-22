@@ -3,26 +3,24 @@ const { Pool } = require("pg");
 const pool = new Pool({
   host: process.env.DB_HOST || "localhost",
   port: Number(process.env.DB_PORT) || 5432,
-  user: process.env.DB_USER || "pedidos",
-  password: process.env.DB_PASSWORD || "pedidos",
-  database: process.env.DB_NAME || "pedidos",
+  user: process.env.DB_USER || "permissoes",
+  password: process.env.DB_PASSWORD || "permissoes",
+  database: process.env.DB_NAME || "permissoes",
 });
 
-async function buscarPedidosPorClienteEStatus(clienteId, status) {
+async function buscarPermissoesPorUsuario(userId) {
   const result = await pool.query(
     `
       SELECT
-        id,
-        cliente_id AS "clienteId",
-        descricao,
-        valor::float8 AS valor,
-        status,
-        criado_em AS "criadoEm"
-      FROM pedidos
-      WHERE cliente_id = $1 AND status = $2
-      ORDER BY id
+        p.id,
+        p.codigo,
+        p.descricao
+      FROM permissoes p
+      INNER JOIN usuario_permissoes up ON up.permissao_id = p.id
+      WHERE up.usuario_id = $1
+      ORDER BY p.id
     `,
-    [clienteId, status]
+    [userId]
   );
 
   return result.rows;
@@ -30,5 +28,5 @@ async function buscarPedidosPorClienteEStatus(clienteId, status) {
 
 module.exports = {
   pool,
-  buscarPedidosPorClienteEStatus,
+  buscarPermissoesPorUsuario,
 };
