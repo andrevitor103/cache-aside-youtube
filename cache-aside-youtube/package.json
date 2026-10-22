@@ -1,0 +1,22 @@
+{
+  "name": "cache-aside-youtube",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "keywords": [
+    "cache-aside",
+    "youtube"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "Exemplo simples de API de pedidos para vídeo sobre cache-aside",
+  "dependencies": {
+    "express": "^5.3.0",
+    "pg": "^8.23.1"
+  }
+}
